@@ -1,0 +1,70 @@
+<!DOCTYPE html>
+<html lang="en">
+
+ <head>
+
+    <meta charset="UTF-8">
+
+    <meta name="viewport"
+          content="width=device-width, initial-scale=1.0">
+
+    <title>Smart Route Planner</title>
+
+ </head>
+
+ <body>
+
+    <h1>Smart Route & Delivery Planner</h1>
+
+    <a href="{{ url_for('add') }}">
+        Add Location
+    </a>
+
+    <h2>Delivery Locations</h2>
+
+    {% if locations %}
+
+        <table border="1">
+
+            <tr>
+                <th>ID</th>
+                <th>Name</th>
+                <th>Latitude</th>
+                <th>Longitude</th>
+            </tr>
+
+            {% for location in locations %}
+
+            <tr>
+
+                <td>
+                    {{ location["id"] }}
+                </td>
+
+                <td>
+                    {{ location["name"] }}
+                </td>
+
+                <td>
+                    {{ location["latitude"] }}
+                </td>
+
+                <td>
+                    {{ location["longitude"] }}
+                </td>
+
+            </tr>
+
+            {% endfor %}
+
+        </table>
+
+    {% else %}
+
+        <p>No delivery locations yet.</p>
+
+    {% endif %}
+
+ </body>
+
+</html>
