@@ -1,10 +1,12 @@
-from flask import Flask, render_template, request, redirect, url_for  
+from flask import Flask, render_template, request, redirect, url_for
 
 from location_repository import (
     create_locations_table,
     add_location,
     get_all_locations
 )
+
+from geocoder import geocode_address
 
 
 app = Flask(__name__)
@@ -18,25 +20,31 @@ def home():
 
     locations = get_all_locations()
 
-    return render_template(
-        "index.html",
-        locations=locations
-    )
-
+    locations = [dict(location) for location in locations]
+    return render_template("index.html",locations=locations)
 
 @app.route("/add", methods=["GET", "POST"])
 def add():
 
     if request.method == "POST":
 
-        name = request.form["name"]
+        name = request.form["name"].strip()
 
-        latitude = float(request.form["latitude"])
+        address = request.form["address"].strip()
 
-        longitude = float(request.form["longitude"])
+        coordinates = geocode_address(address)
+
+        if coordinates is None:
+
+            return "Location not found. Please enter a more specific address."
+
+        latitude = coordinates["latitude"]
+
+        longitude = coordinates["longitude"]
 
         add_location(
             name,
+            address,
             latitude,
             longitude
         )

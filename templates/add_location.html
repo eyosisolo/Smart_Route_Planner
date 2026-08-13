@@ -1,76 +1,65 @@
 <!DOCTYPE html>
 <html lang="en">
 
- <head>
+<head>
 
     <meta charset="UTF-8">
 
     <meta name="viewport"
           content="width=device-width, initial-scale=1.0">
 
-    <title>Add Location</title>
+    <title>Add Delivery Location</title>
 
- </head>
+    <link rel="stylesheet"
+          href="{{ url_for('static', filename='style.css') }}">
 
- <body>
+</head>
 
-    <h1>Add Delivery Location</h1>
+<body>
 
-    <form method="POST">
+    <div class="form-container">
 
-        <label for="name">
-            Location Name
-        </label>
+        <h1>Add Delivery Location</h1>
 
-        <input
-            type="text"
-            id="name"
-            name="name"
-            required
-        >
+        <form method="POST">
 
-        <br><br>
+            <label for="name">
+                Location Name
+            </label>
 
-        <label for="latitude">
-            Latitude
-        </label>
+            <input
+                type="text"
+                id="name"
+                name="name"
+                placeholder="Customer A"
+                required
+            >
 
-        <input
-            type="number"
-            step="any"
-            id="latitude"
-            name="latitude"
-            required
-        >
+            <label for="address">
+                Address
+            </label>
 
-        <br><br>
+            <input
+                type="text"
+                id="address"
+                name="address"
+                placeholder="Bole Medhanealem, Addis Ababa"
+                required
+            >
 
-        <label for="longitude">
-            Longitude
-        </label>
+            <button type="submit">
+                Find Location
+            </button>
 
-        <input
-            type="number"
-            step="any"
-            id="longitude"
-            name="longitude"
-            required
-        >
+        </form>
 
-        <br><br>
+        <a href="{{ url_for('home') }}"
+           class="back-button">
+            ← Back to Home
+        </a>
 
-        <button type="submit">
-            Save Location
-        </button>
+    </div>
 
-    </form>
-
-    <br>
-
-    <a href="{{ url_for('home') }}">
-        Back to Home
-    </a>
-
- </body>
+</body>
 
 </html>

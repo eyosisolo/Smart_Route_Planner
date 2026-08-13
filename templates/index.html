@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html lang="en">
 
- <head>
+<head>
 
     <meta charset="UTF-8">
 
@@ -10,61 +10,175 @@
 
     <title>Smart Route Planner</title>
 
- </head>
 
- <body>
+    <!-- Leaflet CSS -->
+    <link
+        rel="stylesheet"
+        href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"
+    >
 
-    <h1>Smart Route & Delivery Planner</h1>
 
-    <a href="{{ url_for('add') }}">
-        Add Location
-    </a>
+    <!-- Our CSS -->
+    <link
+        rel="stylesheet"
+        href="{{ url_for('static', filename='style.css') }}"
+    >
 
-    <h2>Delivery Locations</h2>
+</head>
 
-    {% if locations %}
 
-        <table border="1">
+<body>
 
-            <tr>
-                <th>ID</th>
-                <th>Name</th>
-                <th>Latitude</th>
-                <th>Longitude</th>
-            </tr>
+
+    <nav>
+
+        <h2>Smart Route Planner</h2>
+
+        <a
+            href="{{ url_for('add') }}"
+            class="nav-button"
+        >
+            Add Location
+        </a>
+
+    </nav>
+
+
+    <div class="container">
+
+        <h1>Delivery Locations</h1>
+
+
+        <!-- Map -->
+
+        <div id="map"></div>
+
+
+        <h2>Saved Locations</h2>
+
+
+        {% if locations %}
 
             {% for location in locations %}
 
-            <tr>
+                <div class="location-card">
 
-                <td>
-                    {{ location["id"] }}
-                </td>
+                    <h3>
+                        {{ location["name"] }}
+                    </h3>
 
-                <td>
-                    {{ location["name"] }}
-                </td>
+                    <p>
+                        {{ location["address"] }}
+                    </p>
 
-                <td>
-                    {{ location["latitude"] }}
-                </td>
-
-                <td>
-                    {{ location["longitude"] }}
-                </td>
-
-            </tr>
+                </div>
 
             {% endfor %}
 
-        </table>
+        {% else %}
 
-    {% else %}
+            <p>
+                No delivery locations added yet.
+            </p>
 
-        <p>No delivery locations yet.</p>
+        {% endif %}
 
-    {% endif %}
+    </div>
 
- </body>
+
+    <!--
+        Flask sends the locations as JSON here.
+
+        We use a script tag with type application/json
+        instead of putting Jinja directly inside JavaScript.
+    -->
+
+    <script
+        id="locations-data"
+        type="application/json"
+    >{{ locations | tojson }}</script>
+
+
+    <!-- Leaflet JavaScript -->
+
+    <script
+        src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js">
+    </script>
+
+
+    <script>
+
+        /*
+         * Get the JSON data created by Flask.
+         */
+
+        const locationsData =
+            document.getElementById("locations-data");
+
+
+        /*
+         * Convert the JSON text into JavaScript data.
+         */
+
+        const locations =
+            JSON.parse(locationsData.textContent);
+
+
+        /*
+         * Create the map.
+         *
+         * These coordinates are currently
+         * centered around Addis Ababa.
+         */
+
+        const map = L.map("map").setView(
+            [9.03, 38.74],
+            12
+        );
+
+
+        /*
+         * Add OpenStreetMap tiles.
+         */
+
+        L.tileLayer(
+            "https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png",
+            {
+                attribution:
+                    "&copy; OpenStreetMap contributors"
+            }
+        ).addTo(map);
+
+
+        /*
+         * Create a marker for every saved location.
+         */
+
+        locations.forEach(function(location) {
+
+            const marker = L.marker([
+                location.latitude,
+                location.longitude
+            ]).addTo(map);
+
+
+            /*
+             * When the user clicks the marker,
+             * show the customer information.
+             */
+
+            marker.bindPopup(
+                "<strong>" +
+                location.name +
+                "</strong><br>" +
+                location.address
+            );
+
+        });
+
+    </script>
+
+
+</body>
 
 </html>
