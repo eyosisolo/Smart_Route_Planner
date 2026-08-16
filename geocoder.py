@@ -1,13 +1,14 @@
 import requests
 
 
+NOMINATIM_URL = "https://nominatim.openstreetmap.org/search"
+
+
 def geocode_address(address):
 
-    url = "https://nominatim.openstreetmap.org/search"
-
-    parameters = {
+    params = {
         "q": address,
-        "format": "jsonv2",
+        "format": "json",
         "limit": 1
     }
 
@@ -15,24 +16,28 @@ def geocode_address(address):
         "User-Agent": "SmartRoutePlanner/1.0"
     }
 
-    response = requests.get(
-        url,
-        params=parameters,
-        headers=headers,
-        timeout=10
-    )
+    try:
 
-    if response.status_code != 200:
+        response = requests.get(
+            NOMINATIM_URL,
+            params=params,
+            headers=headers,
+            timeout=10
+        )
+
+        response.raise_for_status()
+
+        results = response.json()
+
+        if not results:
+
+            return None
+
+        latitude = float(results[0]["lat"])
+        longitude = float(results[0]["lon"])
+
+        return latitude, longitude
+
+    except requests.RequestException:
+
         return None
-
-    results = response.json()
-
-    if not results:
-        return None
-
-    location = results[0]
-
-    return {
-        "latitude": float(location["lat"]),
-        "longitude": float(location["lon"])
-    }

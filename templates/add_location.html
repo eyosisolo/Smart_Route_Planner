@@ -5,13 +5,17 @@
 
     <meta charset="UTF-8">
 
-    <meta name="viewport"
-          content="width=device-width, initial-scale=1.0">
+    <meta
+        name="viewport"
+        content="width=device-width, initial-scale=1.0"
+    >
 
     <title>Add Delivery Location</title>
 
-    <link rel="stylesheet"
-          href="{{ url_for('static', filename='style.css') }}">
+    <link
+        rel="stylesheet"
+        href="{{ url_for('static', filename='style.css') }}"
+    >
 
 </head>
 
@@ -19,42 +23,65 @@
 
     <div class="form-container">
 
-        <h1>Add Delivery Location</h1>
+        <h1>
+            Add Delivery Location
+        </h1>
 
-        <form method="POST">
+
+        {% if error %}
+
+        <div class="error-message">
+            {{ error }}
+        </div>
+
+        {% endif %}
+
+
+        <form
+            method="POST"
+            action="{{ url_for('add') }}"
+        >
 
             <label for="name">
-                Location Name
+                Customer Name
             </label>
 
             <input
                 type="text"
                 id="name"
                 name="name"
-                placeholder="Customer A"
+                placeholder="Example: Customer A"
                 required
             >
 
+
             <label for="address">
-                Address
+                Address or Place
             </label>
 
             <input
                 type="text"
                 id="address"
                 name="address"
-                placeholder="Bole Medhanealem, Addis Ababa"
+                placeholder="Example: Bole Medhanialem, Addis Ababa"
                 required
             >
 
-            <button type="submit">
-                Find Location
+
+            <button
+                type="submit"
+                class="button"
+            >
+                Save Location
             </button>
 
         </form>
 
-        <a href="{{ url_for('home') }}"
-           class="back-button">
+
+        <a
+            href="{{ url_for('home') }}"
+            class="back-button"
+        >
             ← Back to Home
         </a>
 

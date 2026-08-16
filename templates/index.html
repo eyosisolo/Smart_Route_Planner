@@ -5,24 +5,150 @@
 
     <meta charset="UTF-8">
 
-    <meta name="viewport"
-          content="width=device-width, initial-scale=1.0">
+    <meta
+        name="viewport"
+        content="width=device-width, initial-scale=1.0"
+    >
 
-    <title>Smart Route Planner</title>
+    <title>
+        Smart Route Planner
+    </title>
 
 
-    <!-- Leaflet CSS -->
+    <link
+        rel="stylesheet"
+        href="{{ url_for('static', filename='style.css') }}"
+    >
+
+
     <link
         rel="stylesheet"
         href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"
     >
 
 
-    <!-- Our CSS -->
-    <link
-        rel="stylesheet"
-        href="{{ url_for('static', filename='style.css') }}"
-    >
+    <style>
+
+        .page-container {
+            width: 90%;
+            max-width: 1200px;
+            margin: 40px auto;
+        }
+
+
+        .header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 30px;
+        }
+
+
+        .header h1 {
+            margin: 0;
+        }
+
+
+        #map {
+            width: 100%;
+            height: 500px;
+            margin-top: 20px;
+            border-radius: 10px;
+            overflow: hidden;
+        }
+
+
+        .message {
+            margin: 20px 0;
+            padding: 15px;
+            background: #fff3cd;
+            border: 1px solid #ffe69c;
+            border-radius: 6px;
+        }
+
+
+        .locations-section {
+            margin-top: 40px;
+        }
+
+
+        .locations-section h2 {
+            margin-bottom: 20px;
+        }
+
+
+        .table-container {
+            width: 100%;
+            overflow-x: auto;
+        }
+
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            background: white;
+        }
+
+
+        th,
+        td {
+            padding: 14px;
+            border: 1px solid #ddd;
+            text-align: left;
+        }
+
+
+        th {
+            background: #2c3e50;
+            color: white;
+        }
+
+
+        tr:hover {
+            background: #f5f5f5;
+        }
+
+
+        .route-button {
+            display: inline-block;
+            margin-top: 25px;
+            padding: 14px 30px;
+            background: #2ecc71;
+            color: white;
+            text-decoration: none;
+            border-radius: 7px;
+            font-size: 18px;
+        }
+
+
+        .route-button:hover {
+            background: #27ae60;
+        }
+
+
+        .route-info {
+            margin-top: 25px;
+            padding: 20px;
+            background: white;
+            border-radius: 10px;
+            box-shadow: 0 3px 10px rgba(0, 0, 0, 0.08);
+        }
+
+
+        .route-info h2 {
+            margin-bottom: 15px;
+        }
+
+
+        .empty-message {
+            margin-top: 30px;
+            padding: 30px;
+            background: white;
+            border-radius: 10px;
+            text-align: center;
+        }
+
+    </style>
 
 </head>
 
@@ -30,153 +156,417 @@
 <body>
 
 
-    <nav>
+<div class="page-container">
 
-        <h2>Smart Route Planner</h2>
+
+    <!-- HEADER -->
+
+    <div class="header">
+
+        <h1>
+            Smart Route Planner
+        </h1>
+
 
         <a
             href="{{ url_for('add') }}"
-            class="nav-button"
+            class="button"
         >
             Add Location
         </a>
 
-    </nav>
+    </div>
 
 
-    <div class="container">
+    <!-- MESSAGE -->
 
-        <h1>Delivery Locations</h1>
+    {% if message %}
+
+    <div class="message">
+
+        {{ message }}
+
+    </div>
+
+    {% endif %}
 
 
-        <!-- Map -->
+    <!-- MAP -->
 
-        <div id="map"></div>
+    <h2>
+        Delivery Map
+    </h2>
 
 
-        <h2>Saved Locations</h2>
+    <div id="map"></div>
+
+
+    <!-- LOCATIONS -->
+
+    <div class="locations-section">
+
+        <h2>
+            Delivery Locations
+        </h2>
 
 
         {% if locations %}
 
-            {% for location in locations %}
 
-                <div class="location-card">
+        <div class="table-container">
 
-                    <h3>
-                        {{ location["name"] }}
-                    </h3>
+            <table>
 
-                    <p>
-                        {{ location["address"] }}
-                    </p>
+                <thead>
 
-                </div>
+                    <tr>
 
-            {% endfor %}
+                        <th>
+                            #
+                        </th>
+
+                        <th>
+                            Customer
+                        </th>
+
+                        <th>
+                            Address
+                        </th>
+
+                        <th>
+                            Latitude
+                        </th>
+
+                        <th>
+                            Longitude
+                        </th>
+
+                    </tr>
+
+                </thead>
+
+
+                <tbody>
+
+                    {% for location in locations %}
+
+                    <tr>
+
+                        <td>
+                            {{ loop.index }}
+                        </td>
+
+                        <td>
+                            {{ location["name"] }}
+                        </td>
+
+                        <td>
+                            {{ location["address"] }}
+                        </td>
+
+                        <td>
+                            {{ "%.6f"|format(location["latitude"]) }}
+                        </td>
+
+                        <td>
+                            {{ "%.6f"|format(location["longitude"]) }}
+                        </td>
+
+                    </tr>
+
+                    {% endfor %}
+
+                </tbody>
+
+            </table>
+
+        </div>
+
+
+        <!-- ROUTE BUTTON -->
+
+        <a
+            href="{{ url_for('route') }}"
+            class="route-button"
+        >
+            Route All Locations
+        </a>
+
+
+        <!-- ROUTE RESULT -->
+
+        {% if route %}
+
+        <div class="route-info">
+
+            <h2>
+                Optimized Delivery Route
+            </h2>
+
+
+            <p>
+                <strong>
+                    Starting Point:
+                </strong>
+
+                Addis Ababa
+            </p>
+
+
+            <p>
+                <strong>
+                    Total Distance:
+                </strong>
+
+                {{ "%.2f"|format(route["distance"] / 1000) }}
+                km
+            </p>
+
+
+            <p>
+                <strong>
+                    Estimated Travel Time:
+                </strong>
+
+                {{ "%.0f"|format(route["duration"] / 60) }}
+                minutes
+            </p>
+
+        </div>
+
+        {% endif %}
+
 
         {% else %}
 
+
+        <div class="empty-message">
+
+            <h2>
+                No delivery locations yet
+            </h2>
+
+
             <p>
-                No delivery locations added yet.
+                Add a customer to start planning your delivery route.
             </p>
+
+
+            <br>
+
+
+            <a
+                href="{{ url_for('add') }}"
+                class="button"
+            >
+                Add First Location
+            </a>
+
+        </div>
+
 
         {% endif %}
 
     </div>
 
-
-    <!--
-        Flask sends the locations as JSON here.
-
-        We use a script tag with type application/json
-        instead of putting Jinja directly inside JavaScript.
-    -->
-
-    <script
-        id="locations-data"
-        type="application/json"
-    >{{ locations | tojson }}</script>
+</div>
 
 
-    <!-- Leaflet JavaScript -->
+<!-- LEAFLET -->
 
-    <script
-        src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js">
-    </script>
-
-
-    <script>
-
-        /*
-         * Get the JSON data created by Flask.
-         */
-
-        const locationsData =
-            document.getElementById("locations-data");
+<script
+    src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js">
+</script>
 
 
-        /*
-         * Convert the JSON text into JavaScript data.
-         */
+<!-- LOCATIONS DATA -->
 
-        const locations =
-            JSON.parse(locationsData.textContent);
+<script id="locations-data" type="application/json">
+{{ locations | tojson }}
+</script>
 
 
-        /*
-         * Create the map.
-         *
-         * These coordinates are currently
-         * centered around Addis Ababa.
-         */
+<!-- ROUTE DATA -->
 
-        const map = L.map("map").setView(
-            [9.03, 38.74],
-            12
+<script id="route-data" type="application/json">
+{{ route | tojson }}
+</script>
+
+
+<script>
+
+    const locationsData = JSON.parse(
+        document.getElementById(
+            "locations-data"
+        ).textContent
+    );
+
+
+    const routeData = JSON.parse(
+        document.getElementById(
+            "route-data"
+        ).textContent
+    );
+
+
+    /*
+     * Create map.
+     */
+
+    const map = L.map("map").setView(
+        [9.0300, 38.7400],
+        12
+    );
+
+
+    /*
+     * OpenStreetMap tiles.
+     */
+
+    L.tileLayer(
+        "https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png",
+        {
+            attribution:
+                "&copy; OpenStreetMap contributors"
+        }
+    ).addTo(map);
+
+
+    /*
+     * Store marker positions.
+     */
+
+    const markerPoints = [];
+
+
+    /*
+     * Add customer markers.
+     */
+
+    locationsData.forEach(function(location) {
+
+        const latitude =
+            Number(location.latitude);
+
+        const longitude =
+            Number(location.longitude);
+
+
+        const marker = L.marker([
+            latitude,
+            longitude
+        ]);
+
+
+        marker.bindPopup(
+            "<strong>" +
+            location.name +
+            "</strong><br>" +
+            location.address
         );
 
 
-        /*
-         * Add OpenStreetMap tiles.
-         */
+        marker.addTo(map);
 
-        L.tileLayer(
-            "https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png",
+
+        markerPoints.push([
+            latitude,
+            longitude
+        ]);
+
+    });
+
+
+    /*
+     * Starting point.
+     */
+
+    const startMarker = L.marker([
+        9.0300,
+        38.7400
+    ]);
+
+
+    startMarker.bindPopup(
+        "<strong>Delivery Start</strong><br>" +
+        "Addis Ababa"
+    );
+
+
+    startMarker.addTo(map);
+
+
+    /*
+     * Fit map to all locations.
+     */
+
+    if (markerPoints.length > 0) {
+
+        markerPoints.push([
+            9.0300,
+            38.7400
+        ]);
+
+
+        const bounds =
+            L.latLngBounds(markerPoints);
+
+
+        map.fitBounds(
+            bounds,
             {
-                attribution:
-                    "&copy; OpenStreetMap contributors"
+                padding: [40, 40]
             }
-        ).addTo(map);
+        );
+
+    }
 
 
-        /*
-         * Create a marker for every saved location.
-         */
+    /*
+     * Draw optimized route.
+     */
 
-        locations.forEach(function(location) {
+    if (
+        routeData &&
+        routeData.geometry &&
+        routeData.geometry.coordinates
+    ) {
 
-            const marker = L.marker([
-                location.latitude,
-                location.longitude
-            ]).addTo(map);
+        const routeCoordinates =
+            routeData.geometry.coordinates.map(
+                function(point) {
 
+                    return [
+                        point[1],
+                        point[0]
+                    ];
 
-            /*
-             * When the user clicks the marker,
-             * show the customer information.
-             */
-
-            marker.bindPopup(
-                "<strong>" +
-                location.name +
-                "</strong><br>" +
-                location.address
+                }
             );
 
-        });
 
-    </script>
+        const routeLine =
+            L.polyline(
+                routeCoordinates,
+                {
+                    weight: 6
+                }
+            );
+
+
+        routeLine.addTo(map);
+
+
+        map.fitBounds(
+            routeLine.getBounds(),
+            {
+                padding: [40, 40]
+            }
+        );
+
+    }
+
+</script>
 
 
 </body>
