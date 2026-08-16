@@ -1,6 +1,10 @@
 from database import get_connection
 
 
+# ============================================================
+# LOCATIONS TABLE
+# ============================================================
+
 def create_locations_table():
 
     connection = get_connection()
@@ -31,8 +35,7 @@ def create_locations_table():
             for column in columns
         ]
 
-        # Upgrade an older database that did not have
-        # the address column.
+        # Upgrade an older database if necessary.
         if "address" not in column_names:
 
             cursor.execute("""
@@ -46,6 +49,38 @@ def create_locations_table():
 
         connection.close()
 
+
+# ============================================================
+# DRIVER START TABLE
+# ============================================================
+
+def create_driver_start_table():
+
+    connection = get_connection()
+
+    try:
+
+        cursor = connection.cursor()
+
+        cursor.execute("""
+            CREATE TABLE IF NOT EXISTS driver_start(
+                id INTEGER PRIMARY KEY,
+                address TEXT NOT NULL,
+                latitude REAL NOT NULL,
+                longitude REAL NOT NULL
+            )
+        """)
+
+        connection.commit()
+
+    finally:
+
+        connection.close()
+
+
+# ============================================================
+# ADD LOCATION
+# ============================================================
 
 def add_location(
     name,
@@ -82,6 +117,10 @@ def add_location(
         connection.close()
 
 
+# ============================================================
+# GET ALL LOCATIONS
+# ============================================================
+
 def get_all_locations():
 
     connection = get_connection()
@@ -103,14 +142,167 @@ def get_all_locations():
 
         rows = cursor.fetchall()
 
-        # Convert SQLite Row objects into
-        # normal Python dictionaries.
-        locations = [
+        return [
             dict(row)
             for row in rows
         ]
 
-        return locations
+    finally:
+
+        connection.close()
+
+
+# ============================================================
+# GET SELECTED LOCATIONS
+# ============================================================
+
+def get_locations_by_ids(location_ids):
+
+    if not location_ids:
+
+        return []
+
+    connection = get_connection()
+
+    try:
+
+        cursor = connection.cursor()
+
+        placeholders = ",".join(
+            "?" for _ in location_ids
+        )
+
+        query = f"""
+            SELECT
+                id,
+                name,
+                address,
+                latitude,
+                longitude
+            FROM locations
+            WHERE id IN ({placeholders})
+            ORDER BY id ASC
+        """
+
+        cursor.execute(
+            query,
+            location_ids
+        )
+
+        rows = cursor.fetchall()
+
+        return [
+            dict(row)
+            for row in rows
+        ]
+
+    finally:
+
+        connection.close()
+
+
+# ============================================================
+# DELETE LOCATION
+# ============================================================
+
+def delete_location(location_id):
+
+    connection = get_connection()
+
+    try:
+
+        cursor = connection.cursor()
+
+        cursor.execute(
+            """
+            DELETE FROM locations
+            WHERE id = ?
+            """,
+            (location_id,)
+        )
+
+        connection.commit()
+
+    finally:
+
+        connection.close()
+
+
+# ============================================================
+# SAVE / UPDATE DRIVER START
+# ============================================================
+
+def save_driver_start(
+    address,
+    latitude,
+    longitude
+):
+
+    connection = get_connection()
+
+    try:
+
+        cursor = connection.cursor()
+
+        # Because id is always 1, there can only
+        # be one current driver starting location.
+        cursor.execute("""
+            INSERT INTO driver_start(
+                id,
+                address,
+                latitude,
+                longitude
+            )
+            VALUES (?, ?, ?, ?)
+
+            ON CONFLICT(id)
+            DO UPDATE SET
+                address = excluded.address,
+                latitude = excluded.latitude,
+                longitude = excluded.longitude
+        """, (
+            1,
+            address,
+            latitude,
+            longitude
+        ))
+
+        connection.commit()
+
+    finally:
+
+        connection.close()
+
+
+# ============================================================
+# GET DRIVER START
+# ============================================================
+
+def get_driver_start():
+
+    connection = get_connection()
+
+    try:
+
+        cursor = connection.cursor()
+
+        cursor.execute("""
+            SELECT
+                id,
+                address,
+                latitude,
+                longitude
+            FROM driver_start
+            WHERE id = 1
+        """)
+
+        row = cursor.fetchone()
+
+        if row is None:
+
+            return None
+
+        return dict(row)
 
     finally:
 
